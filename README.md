@@ -1,25 +1,38 @@
-# Idowu_Obisesan_301931147-
-XYZ_University_Student_Portal with Student Results, containing: Students Name, Courses, Departments, Lecturers, Grades, Registration Record
 # MIT 8103 Advanced Database Systems Portfolio
 
-Name: Idowu Obisesan
+**Student:** Idowu Obisesan  
+**Student ID:** 301931147  
+**Case study:** XYZ University Student Results Portal
 
-Student ID:301931147 
+## Project overview
 
-## Case study
+This repository documents a university student portal and results system for XYZ University. The case study covers students, courses, departments, lecturers, grades and registration records. The evidence in this portfolio is structured around the five assessment tasks required for MIT 8103.
 
-XYZ_University_Student_Result_Portal
+## Portfolio structure
 
-## Portfolio folders
+- [Portfolio 1 — Database Design and Modelling](portfolio-1-database-design/README.md)
+- [Portfolio 2 — Query Processing and Optimisation](portfolio-2-query-optimisation/README.md)
+- [Portfolio 3 — Transactions and Concurrency](portfolio-3-transactions-concurrency/)
+- [Portfolio 4 — NoSQL and Advanced Data Models](portfolio-4-nosql/)
+- [Portfolio 5 — Distributed and Cloud Database Exercise](portfolio-5-distributed-cloud/)
 
-- portfolio-1-database-design: design, schema and normalisation.
-- portfolio-2-query-optimisation: queries, plans and performance analysis.
-- portfolio-3-transactions-concurrency: commit, rollback and concurrency.
-- portfolio-4-nosql: NoSQL model, implementation and suitability.
-- portfolio-5-distributed-cloud: distributed or cloud database exercise.
+## Case study summary
 
-touch portfolio-1-database-design/Idowu_Obisesan_301931147_P1_README.md
-touch portfolio-2-query-optimisation/Idowu_Obisesan_301931147_P2_README.md
-touch portfolio-3-transactions-concurrency/Idowu_Obisesan_301931147_P3_README.md
-touch portfolio-4-nosql/Idowu_Obisesan_301931147_P4_README.md
-touch portfolio-5-distributed-cloud/Idowu_Obisesan_301931147_P5_README.md 
+The system records all students enrolled in programs at XYZ University. Each student belongs to a department, registers for courses, and receives grades for each completed course. Every course belongs to a department and is taught by one or more lecturers. A registration record stores the student, course, semester, and final result.
+
+This design supports the key database tasks in the assessment: modelling the domain, validating data integrity, querying academic records, testing transaction behaviour, and discussing NoSQL or distributed database alternatives.
+
+## Submission checklist
+
+- [ ] Portfolio 1 completed with ER diagram, schema, constraints and normalisation explanation.
+- [ ] Portfolio 2 completed with queries, results and performance analysis.
+- [ ] Portfolio 3 completed with transactions and concurrency evidence.
+- [ ] Portfolio 4 completed with NoSQL model and suitability discussion.
+- [ ] Portfolio 5 completed with distributed/cloud database exercise.
+- [ ] Final summary and references checked before submission.
+
+## Reference material
+
+- [MIT 8103 Codelab](https://github.com/arizonal2014/MIT8103_Codelab)
+- [Portfolio generator](https://github.com/arizonal2014/MIT8103_Portfolio_Generator)
+- [Completed portfolio example](https://github.com/arizonal2014/Harrison_Perete_202600001)
