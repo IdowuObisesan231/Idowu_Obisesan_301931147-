@@ -1,39 +1,38 @@
--- Portfolio 2 SQL working file
--- Case study: XYZ University Student Results Portal
+-- Portfolio 2: Example SQL queries for XYZ University database
 
 -- Query 1: Students in a department
-SELECT s.student_number, s.first_name, s.last_name, d.department_name
+SELECT s.student_id, s.first_name, s.last_name, d.department_name
 FROM student s
 JOIN department d ON s.department_id = d.department_id
 WHERE d.department_name = 'Computer Science'
 ORDER BY s.last_name;
 
--- Query 2: Course registration results
-SELECT s.student_number, s.first_name, s.last_name,
-       c.course_code, c.course_title, r.grade
+-- Query 2: Student results by course
+SELECT s.student_id, s.first_name, s.last_name,
+       c.course_code, c.course_title, r.grade, r.score
 FROM registration r
 JOIN student s ON r.student_id = s.student_id
 JOIN course c ON r.course_id = c.course_id
 ORDER BY s.last_name, c.course_code;
 
--- Query 3: Students with failing grades
-SELECT s.student_number, s.first_name, s.last_name,
-       c.course_code, c.course_title, r.grade
+-- Query 3: Students with low grades
+SELECT s.student_id, s.first_name, s.last_name,
+       c.course_code, c.course_title, r.score, r.grade
 FROM registration r
 JOIN student s ON r.student_id = s.student_id
 JOIN course c ON r.course_id = c.course_id
-WHERE r.grade IN ('F', 'E', 'D')
+WHERE r.grade IN ('D')
 ORDER BY s.last_name;
 
 -- Query 4: Lecturer workload
-SELECT l.lecturer_number, l.first_name, l.last_name,
-       COUNT(ca.course_id) AS courses_taught
+SELECT l.lecturer_id, l.first_name, l.last_name,
+       COUNT(lc.course_id) AS courses_assigned
 FROM lecturer l
-LEFT JOIN course_assignment ca ON l.lecturer_id = ca.lecturer_id
-GROUP BY l.lecturer_number, l.first_name, l.last_name
-ORDER BY courses_taught DESC, l.last_name;
+LEFT JOIN lecturer_course lc ON l.lecturer_id = lc.lecturer_id
+GROUP BY l.lecturer_id, l.first_name, l.last_name
+ORDER BY courses_assigned DESC, l.last_name;
 
--- Query 5: Average grade point by course
+-- Query 5: Average grade by course
 SELECT c.course_code, c.course_title,
        ROUND(AVG(CASE
            WHEN r.grade = 'A' THEN 4.0
@@ -51,7 +50,7 @@ ORDER BY average_grade_point DESC;
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
 FROM student
-WHERE department_id = 1;
+WHERE department_id = 'DPT001';
 
 -- Add index for performance comparison
 CREATE INDEX idx_student_department_id
@@ -61,7 +60,7 @@ ON student (department_id);
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
 FROM student
-WHERE department_id = 1;
+WHERE department_id = 'DPT001';
 
 -- Additional useful indexes
 CREATE INDEX idx_registration_student_id
@@ -70,8 +69,8 @@ ON registration (student_id);
 CREATE INDEX idx_registration_course_id
 ON registration (course_id);
 
-CREATE INDEX idx_registration_grade
-ON registration (grade);
-
 CREATE INDEX idx_course_department_id
 ON course (department_id);
+
+CREATE INDEX idx_lecturer_department_id
+ON lecturer (department_id);

@@ -2,70 +2,74 @@
 
 ## Purpose
 
-This portfolio focuses on how the relational database handles common academic queries, how the query planner chooses execution strategies, and how indexing changes performance.
+This portfolio focuses on how the relational database handles common academic queries, how the query planner chooses execution strategies, and how indexing changes performance for the XYZ University Student Results Portal.
 
-The main tasks are:
+## Case study data used
 
-- write useful SQL queries against the student results schema
-- execute them and review the output
-- compare query plans before and after indexing
-- explain why the chosen plan is efficient or inefficient
+The database stores the following academic records:
+
+- Departments: 7
+- Students: 10
+- Lecturers: 8
+- Courses: 10
+- Lecturer assignments: 10
+- Student registrations: 14
+
+The relational design is based on the Department, Student, Lecturer, Course, Lecturer_Course, and Registration tables described in Portfolio 1.
 
 ## Example database queries
-
-Use the same entity structure created in Portfolio 1.
 
 ### Query 1: Students in a department
 
 ```sql
-SELECT s.student_number, s.first_name, s.last_name, d.department_name
+SELECT s.student_id, s.first_name, s.last_name, d.department_name
 FROM student s
 JOIN department d ON s.department_id = d.department_id
 WHERE d.department_name = 'Computer Science'
 ORDER BY s.last_name;
 ```
 
-Purpose: shows how to retrieve students by department.
+Purpose: retrieve all students in a particular department.
 
-### Query 2: Students and their grades by course
+### Query 2: Student academic results by course
 
 ```sql
-SELECT s.student_number, s.first_name, s.last_name,
-       c.course_code, c.course_title, r.grade
+SELECT s.student_id, s.first_name, s.last_name,
+       c.course_code, c.course_title, r.grade, r.score
 FROM registration r
 JOIN student s ON r.student_id = s.student_id
 JOIN course c ON r.course_id = c.course_id
 ORDER BY s.last_name, c.course_code;
 ```
 
-Purpose: reports student results across registered courses.
+Purpose: show results for each course registration.
 
-### Query 3: Students who failed a course
+### Query 3: Students with failing grades
 
 ```sql
-SELECT s.student_number, s.first_name, s.last_name,
-       c.course_code, c.course_title, r.grade
+SELECT s.student_id, s.first_name, s.last_name,
+       c.course_code, c.course_title, r.score, r.grade
 FROM registration r
 JOIN student s ON r.student_id = s.student_id
 JOIN course c ON r.course_id = c.course_id
-WHERE r.grade IN ('F', 'E', 'D')
+WHERE r.grade IN ('D')
 ORDER BY s.last_name;
 ```
 
-Purpose: identifies academic risk or intervention candidates.
+Purpose: identify students with low academic performance.
 
 ### Query 4: Lecturer workload
 
 ```sql
-SELECT l.lecturer_number, l.first_name, l.last_name,
-       COUNT(ca.course_id) AS courses_taught
+SELECT l.lecturer_id, l.first_name, l.last_name,
+       COUNT(lc.course_id) AS courses_assigned
 FROM lecturer l
-LEFT JOIN course_assignment ca ON l.lecturer_id = ca.lecturer_id
-GROUP BY l.lecturer_number, l.first_name, l.last_name
-ORDER BY courses_taught DESC, l.last_name;
+LEFT JOIN lecturer_course lc ON l.lecturer_id = lc.lecturer_id
+GROUP BY l.lecturer_id, l.first_name, l.last_name
+ORDER BY courses_assigned DESC, l.last_name;
 ```
 
-Purpose: shows how many courses each lecturer teaches.
+Purpose: show how many courses each lecturer teaches.
 
 ### Query 5: Average grade by course
 
@@ -84,22 +88,20 @@ GROUP BY c.course_code, c.course_title
 ORDER BY average_grade_point DESC;
 ```
 
-Purpose: summarises performance in each course.
+Purpose: evaluate academic performance by course.
 
 ## Query plan and optimisation example
 
-The database planner chooses a strategy based on table size, indexes and search conditions. A repeated filter such as `WHERE department_id = ...` benefits from an index.
-
-Example of a plan before indexing:
+The database planner selects an execution strategy based on table size, indexes, and search conditions. A query filtering on department or student_id can improve significantly when an index is available.
 
 ```sql
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
 FROM student
-WHERE department_id = 1;
+WHERE department_id = 'DPT001';
 ```
 
-Example after adding an index:
+After adding an index:
 
 ```sql
 CREATE INDEX idx_student_department_id
@@ -108,15 +110,10 @@ ON student (department_id);
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
 FROM student
-WHERE department_id = 1;
+WHERE department_id = 'DPT001';
 ```
 
-Expected improvement:
-
-- Before index: full scan or larger sequential read
-- After index: index scan or index-only scan, with fewer buffer reads
-
-## Suggested optimisation indexes
+## Useful indexes for this database
 
 ```sql
 CREATE INDEX idx_registration_student_id
@@ -125,46 +122,17 @@ ON registration (student_id);
 CREATE INDEX idx_registration_course_id
 ON registration (course_id);
 
-CREATE INDEX idx_registration_grade
-ON registration (grade);
-
 CREATE INDEX idx_course_department_id
 ON course (department_id);
 
-CREATE INDEX idx_student_department_id
-ON student (department_id);
+CREATE INDEX idx_lecturer_department_id
+ON lecturer (department_id);
 ```
 
-## Performance analysis guidance
+## Why indexing matters
 
-When writing your final explanation:
+Without indexes, the database may scan many rows when answering common academic queries. Indexes reduce the number of records examined, which improves efficiency and response time during registration checks, grade reporting, and department summaries.
 
-- compare query time before and after the index
-- explain whether PostgreSQL changed from a sequential scan to an index scan
-- mention buffer usage and reduced read cost
-- keep the discussion realistic: indexes improve certain filters but add storage and maintenance overhead
+## Conclusion
 
-## Portfolio 2 evidence to save
-
-Include the following in your final documentation:
-
-- SQL query script with actual results
-- `EXPLAIN (ANALYZE, BUFFERS)` output before and after index creation
-- a short comparison table of timing differences
-- a paragraph explaining the cause of the performance change
-
-## Example comparison table
-
-| Query type | Before index | After index | Observation |
-| --- | --- | --- | --- |
-| Filter by department | Seq Scan | Index Scan | Faster lookup for department-based reports |
-| Join with registration | Hash Join / Seq Scan | Nested Loop / Index Scan | Better when the foreign key is indexed |
-
-## Portfolio 2 submission checklist
-
-- [ ] Queries run and results captured
-- [ ] Execution plans saved
-- [ ] Index created and compared
-- [ ] Measured performance discussed
-- [ ] Final explanation written clearly in your own words
-
+The XYZ University database is suitable for relational queries because it contains clearly defined relationships, predictable data structures, and many reporting tasks. Indexing plays a major role in ensuring that queries such as student search, lecturer workload, and course performance analysis run efficiently even as the database grows.

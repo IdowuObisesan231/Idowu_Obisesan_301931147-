@@ -1,185 +1,183 @@
 # Portfolio 1: Database Design and Modelling
 
-## Case study
+## Project Title
 
-XYZ University Student Results Portal is a system for recording student records, academic programmes, course offerings, lecturer assignments and final grades. The database must support course registration, grade tracking, academic reporting, and department-level analysis.
+Design and Implementation of a Relational Database Management System for XYZ University.
 
-The main entities in the case study are:
+**Institution:** XYZ University, Nigeria  
+**Academic Session:** 2025/2026
 
-- Student
-- Department
-- Course
-- Lecturer
-- Registration / Grade Record
+## 1. Department Table
 
-## Business rules
+This table contains the various academic departments in XYZ University.
 
-1. Each student belongs to exactly one department.
-2. Each course belongs to exactly one department.
-3. A lecturer belongs to one department.
-4. A course may be taught by one or more lecturers.
-5. A student can register for many courses, and each course can have many students.
-6. One student may register for the same course only once in a given semester.
-7. Each registration record stores the semester and final grade for that course.
-8. A grade must be one of the allowed academic results (A, B, C, D, E, F, W, etc., according to institutional policy).
+| Department_ID | Department_Name | Faculty |
+| --- | --- | --- |
+| DPT001 | Computer Science | Computing |
+| DPT002 | Microbiology | Natural Sciences |
+| DPT003 | Pure and Applied Biology | Natural Sciences |
+| DPT004 | Biochemistry | Natural Sciences |
+| DPT005 | Mathematics | Physical Sciences |
+| DPT006 | Accounting | Management Sciences |
+| DPT007 | Mass Communication | Communication Studies |
 
-## Conceptual data model
+## 2. Student Table
 
-This case study naturally follows a relational model with a set of related tables. The main relationships are:
+This table stores the personal and academic information of registered students.
 
-- Department to Student: one-to-many
-- Department to Course: one-to-many
-- Department to Lecturer: one-to-many
-- Student to Course via Registration: many-to-many
-- Lecturer to Course via Course Assignment: many-to-many
+| Student_ID | First_Name | Last_Name | Gender | Department_ID | Level | Email |
+| --- | --- | --- | --- | --- | --- | --- |
+| STU001 | David | Adewale | Male | DPT001 | 300 | david@xyz.edu.ng |
+| STU002 | Esther | Okafor | Female | DPT002 | 200 | esther@xyz.edu.ng |
+| STU003 | Michael | Johnson | Male | DPT003 | 400 | michael@xyz.edu.ng |
+| STU004 | Grace | Ibrahim | Female | DPT004 | 300 | grace@xyz.edu.ng |
+| STU005 | Samuel | Bello | Male | DPT001 | 200 | samuel@xyz.edu.ng |
+| STU006 | Favour | Oladipo | Female | DPT003 | 200 | favour@xyz.edu.ng |
+| STU007 | Daniel | Eze | Male | DPT005 | 400 | daniel@xyz.edu.ng |
+| STU008 | Deborah | Williams | Female | DPT006 | 300 | deborah@xyz.edu.ng |
+| STU009 | Joseph | Musa | Male | DPT002 | 400 | joseph@xyz.edu.ng |
+| STU010 | Peace | Akinola | Female | DPT007 | 200 | peace@xyz.edu.ng |
 
-## Relational schema
+## 3. Lecturer Table
 
-```sql
-CREATE TABLE department (
-    department_id SERIAL PRIMARY KEY,
-    department_name VARCHAR(100) NOT NULL UNIQUE,
-    department_code VARCHAR(20) NOT NULL UNIQUE
-);
+This table maintains information about academic staff members.
 
-CREATE TABLE student (
-    student_id SERIAL PRIMARY KEY,
-    student_number VARCHAR(20) NOT NULL UNIQUE,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    date_of_birth DATE,
-    department_id INT NOT NULL,
-    admission_year INT NOT NULL,
-    FOREIGN KEY (department_id) REFERENCES department(department_id)
-);
+| Lecturer_ID | First_Name | Last_Name | Email | Department_ID | Designation |
+| --- | --- | --- | --- | --- | --- |
+| LEC001 | John | Adeyemi | john@xyz.edu.ng | DPT001 | Professor |
+| LEC002 | Mary | Okonkwo | mary@xyz.edu.ng | DPT002 | Senior Lecturer |
+| LEC003 | Peter | Obasanjo | peter@xyz.edu.ng | DPT003 | Lecturer I |
+| LEC004 | Sarah | Ibrahim | sarah@xyz.edu.ng | DPT004 | Senior Lecturer |
+| LEC005 | David | Adebayo | david@xyz.edu.ng | DPT005 | Lecturer II |
+| LEC006 | Helen | Yusuf | helen@xyz.edu.ng | DPT006 | Professor |
+| LEC007 | Charles | Nwosu | charles@xyz.edu.ng | DPT007 | Lecturer I |
+| LEC008 | Esther | Balogun | estherb@xyz.edu.ng | DPT001 | Senior Lecturer |
 
-CREATE TABLE lecturer (
-    lecturer_id SERIAL PRIMARY KEY,
-    lecturer_number VARCHAR(20) NOT NULL UNIQUE,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    department_id INT NOT NULL,
-    FOREIGN KEY (department_id) REFERENCES department(department_id)
-);
+## 4. Course Table
 
-CREATE TABLE course (
-    course_id SERIAL PRIMARY KEY,
-    course_code VARCHAR(20) NOT NULL UNIQUE,
-    course_title VARCHAR(100) NOT NULL,
-    credits INT NOT NULL CHECK (credits > 0),
-    department_id INT NOT NULL,
-    FOREIGN KEY (department_id) REFERENCES department(department_id)
-);
+This table contains the courses offered by the different departments.
 
-CREATE TABLE course_assignment (
-    course_id INT NOT NULL,
-    lecturer_id INT NOT NULL,
-    PRIMARY KEY (course_id, lecturer_id),
-    FOREIGN KEY (course_id) REFERENCES course(course_id),
-    FOREIGN KEY (lecturer_id) REFERENCES lecturer(lecturer_id)
-);
+| Course_ID | Course_Code | Course_Title | Credit_Unit | Department_ID |
+| --- | --- | --- | --- | --- |
+| CRS001 | CSC301 | Database Management Systems | 3 | DPT001 |
+| CRS002 | CSC302 | Computer Networks | 2 | DPT001 |
+| CRS003 | MCB201 | General Microbiology | 3 | DPT002 |
+| CRS004 | MCB302 | Medical Microbiology | 2 | DPT002 |
+| CRS005 | BIO401 | Plant Biotechnology | 3 | DPT003 |
+| CRS006 | BIO302 | Plant Physiology | 2 | DPT003 |
+| CRS007 | BCH301 | Enzymology | 3 | DPT004 |
+| CRS008 | MAT401 | Advanced Calculus | 3 | DPT005 |
+| CRS009 | ACC301 | Financial Accounting | 2 | DPT006 |
+| CRS010 | MAC201 | Media and Society | 2 | DPT007 |
 
-CREATE TABLE registration (
-    registration_id SERIAL PRIMARY KEY,
-    student_id INT NOT NULL,
-    course_id INT NOT NULL,
-    semester VARCHAR(20) NOT NULL,
-    academic_year VARCHAR(20) NOT NULL,
-    grade VARCHAR(5),
-    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-    registered_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (student_id, course_id, semester, academic_year),
-    FOREIGN KEY (student_id) REFERENCES student(student_id),
-    FOREIGN KEY (course_id) REFERENCES course(course_id),
-    CHECK (grade IN ('A', 'B', 'C', 'D', 'E', 'F', 'W', 'WA', 'I'))
-);
-```
+## 5. Lecturer_Course Table
 
-## Key constraints
+This table records which lecturers are assigned to teach particular courses. It resolves the many-to-many relationship between lecturers and courses.
 
-- Primary keys identify each row uniquely.
-- Foreign keys enforce valid relationships between tables.
-- UNIQUE constraints prevent duplicate student numbers, course codes and registrations.
-- CHECK constraints restrict invalid values such as negative credits and invalid grade codes.
-- NOT NULL constraints enforce required data entry.
+| Assignment_ID | Lecturer_ID | Course_ID | Semester | Academic_Year |
+| --- | --- | --- | --- | --- |
+| ASN001 | LEC001 | CRS001 | First | 2025/2026 |
+| ASN002 | LEC008 | CRS002 | First | 2025/2026 |
+| ASN003 | LEC002 | CRS003 | First | 2025/2026 |
+| ASN004 | LEC002 | CRS004 | Second | 2025/2026 |
+| ASN005 | LEC003 | CRS005 | First | 2025/2026 |
+| ASN006 | LEC003 | CRS006 | Second | 2025/2026 |
+| ASN007 | LEC004 | CRS007 | First | 2025/2026 |
+| ASN008 | LEC005 | CRS008 | First | 2025/2026 |
+| ASN009 | LEC006 | CRS009 | Second | 2025/2026 |
+| ASN010 | LEC007 | CRS010 | First | 2025/2026 |
 
-## ER diagram overview
+## 6. Registration Table
 
-The ER model can be described as:
+This table records students' course enrolments, registration status, and academic results.
 
-- Department has many Students, Lecturers and Courses.
-- Student registers for many Courses through the Registration table.
-- Course is taught by many Lecturers through the Course Assignment table.
-- Registration records the semester, academic year and grade for each student-course pair.
+| Registration_ID | Student_ID | Course_ID | Semester | Academic_Year | Registration_Status | Score | Grade |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| REG001 | STU001 | CRS001 | First | 2025/2026 | Approved | 78 | A |
+| REG002 | STU001 | CRS002 | First | 2025/2026 | Approved | 65 | B |
+| REG003 | STU002 | CRS003 | First | 2025/2026 | Approved | 72 | A |
+| REG004 | STU002 | CRS004 | Second | 2025/2026 | Pending | NULL | NULL |
+| REG005 | STU003 | CRS005 | First | 2025/2026 | Approved | 85 | A |
+| REG006 | STU003 | CRS006 | Second | 2025/2026 | Approved | 69 | B |
+| REG007 | STU004 | CRS007 | First | 2025/2026 | Approved | 58 | C |
+| REG008 | STU005 | CRS001 | First | 2025/2026 | Approved | 62 | B |
+| REG009 | STU005 | CRS002 | First | 2025/2026 | Approved | 48 | D |
+| REG010 | STU006 | CRS005 | First | 2025/2026 | Approved | 76 | A |
+| REG011 | STU007 | CRS008 | First | 2025/2026 | Approved | 81 | A |
+| REG012 | STU008 | CRS009 | Second | 2025/2026 | Approved | 67 | B |
+| REG013 | STU009 | CRS003 | First | 2025/2026 | Approved | 55 | C |
+| REG014 | STU010 | CRS010 | First | 2025/2026 | Approved | 73 | A |
 
-A suitable ER diagram should show the following cardinalities:
+## 7. Summary of the Database
 
-- Department 1 — N Student
-- Department 1 — N Lecturer
-- Department 1 — N Course
-- Student N — N Course through Registration
-- Lecturer N — N Course through course_assignment
+The proposed XYZ University database contains six relational tables.
 
-## Normalisation explanation
+| Table | Number of Records | Primary Key |
+| --- | --- | --- |
+| Department | 7 | Department_ID |
+| Student | 10 | Student_ID |
+| Lecturer | 8 | Lecturer_ID |
+| Course | 10 | Course_ID |
+| Lecturer_Course | 10 | Assignment_ID |
+| Registration | 14 | Registration_ID |
+| Total | 59 |  |
+
+## 8. Database Relationships
+
+The tables are connected through primary and foreign keys as follows:
+
+1. Department – Student: One department can have many students.
+2. Department – Lecturer: One department can employ many lecturers.
+3. Department – Course: One department can offer many courses.
+4. Lecturer – Course: Many-to-many relationship, resolved through the Lecturer_Course table.
+5. Student – Course: Many-to-many relationship, resolved through the Registration table.
+6. Course – Registration: One course can have many student registrations.
+7. Student – Registration: One student can register for many courses.
+
+## 9. Example Database Queries for the Assignment
+
+The hypothetical data can be used to demonstrate the following SQL operations on GitHub.
+
+| Administrative Task | SQL Operation |
+| --- | --- |
+| View all registered students | SELECT |
+| Find students in a particular department | SELECT with WHERE |
+| View a student's academic results | SELECT with JOIN |
+| List all students registered for CSC301 | SELECT with JOIN |
+| Identify lecturers teaching each course | SELECT with JOIN |
+| Count students in each department | GROUP BY and COUNT |
+| Identify courses without registrations | LEFT JOIN |
+| Update a student's registration status | UPDATE |
+| Add a new student record | INSERT |
+| Remove an invalid registration | DELETE |
+
+## 10. Important Database Design Considerations
+
+For the Advanced Database Management System assignment, consider implementing these constraints:
+
+- Primary Key: Every table must have a unique primary key.
+- Foreign Key: Ensure that student, lecturer, department, and course records maintain referential integrity.
+- Unique Constraint: Student email, lecturer email, and course code should be unique.
+- NOT NULL: Essential fields such as student name, department ID, and course title should not be empty.
+- CHECK Constraint: Credit units and examination scores should fall within acceptable ranges.
+- Composite Uniqueness: A student should not register for the same course twice in the same semester and academic year.
+
+## Normalisation and ER Model Summary
+
+The database design follows the normalisation rules needed for a relational academic system.
 
 ### 1NF
 
-A table is in first normal form if each column contains atomic values and each row is unique. For example, the registration table stores one row per student-course-semester combination. Each grade is stored in a single column rather than as a list or repeated fields.
-
-Example:
-
-- Before: `student_id = 101, grades = 'A, B, C'`
-- After: one row per course registration, with separate values in `course_id` and `grade`.
+Each table stores atomic values. A registration row represents one student-course record for a semester and year, rather than storing repeated values in a single field.
 
 ### 2NF
 
-A table is in 2NF if it is in 1NF and all non-key attributes depend on the whole primary key. In the registration table, attributes such as `grade`, `semester` and `status` depend on the full registration key, not on just one column. The student and course details are kept in their own tables instead of repeating them in registration rows.
+Every non-key attribute depends on the full primary key. Student and course details are kept in separate tables so they are not repeated in registration rows.
 
 ### 3NF
 
-A table is in 3NF if it is in 2NF and all non-key attributes depend only on the primary key and not on other non-key attributes. For example:
+No non-key attribute depends on another non-key attribute. Department names, course titles, and lecturer information are stored once and referenced by foreign keys.
 
-- `student` stores student details only; it does not repeat department name.
-- `course` stores course title and credits only; it does not duplicate lecturer details.
-- Department name is stored once in `department`.
+## Conclusion
 
-This reduces update anomalies and ensures clean, consistent data.
-
-## Why this schema is suitable
-
-The design supports the assignment requirements:
-
-- It captures all core entities in the case study.
-- It enforces data validity through constraints.
-- It handles many-to-many relationships cleanly.
-- It supports queries for student performance, department analysis, course workload and lecturer assignments.
-
-## Evidence to include in the final portfolio
-
-You should include:
-
-- ER diagram image or textual relationship model
-- SQL schema creation script
-- Sample insert statements
-- A short validation showing created rows and constraints working
-- A paragraph explaining the design and normalisation choices
-
-## Suggested file names
-
-- `schema.sql`
-- `sample_data.sql`
-- `portfolio_1_validation.sql`
-
-Use actual outputs from PostgreSQL to support your explanations.
-
-## Portfolio 1 submission checklist
-
-- [ ] case study description written clearly
-- [ ] ER diagram included
-- [ ] schema and keys explained
-- [ ] normalisation examples included
-- [ ] constraints and validation evidence saved
-- [ ] final explanation written in your own words
-
+This relational database design satisfies the assignment requirements by modelling the university domain with clear entities, relationships, constraints, and academic tracking features. It promotes data integrity, reduces redundancy, and supports meaningful SQL queries for reporting and academic management.
