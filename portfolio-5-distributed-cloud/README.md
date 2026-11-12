@@ -2,31 +2,31 @@
 
 ## Purpose
 
-This portfolio examines how the XYZ University Student Results Portal could be deployed in a distributed or cloud database environment. The system stores student profiles, departments, courses, registrations, grades, and lecturer assignments. As the university grows across campuses and student numbers increase, the database must continue to provide reliable access, protect academic records, and support reporting workloads.
+This portfolio examines how the XYZ University Student Results Portal could be designed and deployed in a distributed or cloud database environment. The university system contains student records, department information, course registrations, lecturer assignments, and grade history. As the institution grows, the database must support larger workloads, greater concurrency, and better fault tolerance without compromising academic integrity.
 
-This exercise focuses on:
+The main tasks in this portfolio are:
 
-- distributed database architecture and deployment choices
-- cloud-managed relational databases
-- replication, partitioning, availability, and recovery
-- performance and consistency trade-offs
-- the suitability of cloud databases for the university case study
+- explain why a distributed or cloud-based design may be needed
+- describe a suitable architecture for the student records system
+- discuss replication, partitioning, and availability
+- explain the trade-offs between consistency and performance
+- justify the choice of a cloud-managed database for the case study
 
-## Case study requirements
+## Why distributed and cloud databases matter
 
-The student portal should support:
+A modern university system may need to support:
 
-- reliable course registration during peak enrolment periods
-- accurate and auditable grade updates
-- access for students, lecturers, and administrators across campuses
-- reporting on registrations and academic performance
-- backup and recovery in case of infrastructure failure
+- large numbers of students and lecturers
+- increased registration activity during enrolment periods
+- frequent reporting on academic performance
+- access from several campuses or remote locations
+- higher availability and resilience for critical academic records
 
-Grades and registration records are authoritative academic data, so correctness and transaction integrity take priority over accepting conflicting writes during a network failure.
+A single local database may be adequate for a small environment, but a distributed or cloud-based design becomes important when scale, availability, and disaster recovery become significant requirements.
 
-## Proposed cloud architecture
+## Example architecture
 
-A practical starting design is a managed PostgreSQL database with a primary instance, a standby for failover, and optional read replicas for reporting.
+A practical starting point is a managed PostgreSQL database in a cloud environment. The database can be configured with a primary instance, failover standby, and read replicas for reporting.
 
 ```text
 Students / Lecturers / Administrators
@@ -43,46 +43,43 @@ Students / Lecturers / Administrators
    Automated backups and snapshots
 ```
 
-### Request flow
+### How this supports the university system
 
-1. Users access the portal through the application.
-2. Registration and grade changes are validated by the application and written to the primary database.
-3. Read-heavy dashboards and reports may use a read replica when slightly delayed data is acceptable.
-4. A standby instance can be promoted if the primary becomes unavailable, according to the cloud provider's failover configuration.
-5. Automated backups and snapshots support restoration after accidental changes or infrastructure failure.
-
-The primary remains the source of truth. The application should send reads that require the latest committed academic record to the primary rather than a potentially delayed replica.
+- the primary database handles all writes to grades and registrations
+- read replicas support reporting and academic dashboards
+- failover ensures that the system can continue operating if the primary instance fails
+- backups and snapshots support restoration in the event of accidental changes or infrastructure failures
 
 ## Replication and consistency
 
-Replication copies database changes from one instance to another. It can improve availability and help distribute read workloads, but replicas may lag behind the primary.
+Replication is the process of copying data from one database instance to another. This improves availability and allows read workload distribution, but it also introduces potential delay between the primary and the replicas.
 
-For this portal:
+For the student portal:
 
-- writes to grades and registrations should go to the primary
-- reports may use replicas if the report can tolerate a short replication delay
-- users should be told when report data is current as of a particular time if replica lag is possible
-- grade changes should be audited, including who made the change and when
+- registration and grade updates should be written to the primary database
+- report queries may use replicas if slight delay is acceptable
+- final academic records must remain consistent and auditable
+- grade changes should be logged with timestamps and user actions
 
-Synchronous replication can reduce the chance of losing recently committed changes during failover, but may increase write latency. Asynchronous replication can provide faster writes, but a recently committed change might not yet have reached a replica. The selected cloud service configuration should be tested against the university's recovery requirements.
+A distributed system often faces a trade-off between consistency and availability. For academic records, a strong consistency model is usually preferred for grade changes and student registration. Read-heavy reports can tolerate some delay if the application clearly handles replica lag.
 
 ## Partitioning and scaling
 
-Partitioning divides a large table into smaller logical parts, often based on a date or other commonly filtered value. For example, registration records could be partitioned by academic year when the table becomes large and reports frequently filter by year.
+As the database grows, partitioning or sharding may become useful. Partitioning divides large tables into smaller logical units, often by academic year, department, or a relevant date range.
 
-Partitioning should be introduced only after measuring data volume and query performance. The existing unique rule for a registration—one student, course, semester, and academic year—must still be enforced correctly with the chosen partitioning strategy. Sharding across independent databases adds more complexity and should be considered only when a single managed database and read replicas no longer meet measured requirements.
+For example, the `registration` table may later be partitioned by `academic_year` when reporting and record volume increase. Partitioning should only be introduced when there is evidence that query patterns and table size justify it.
 
-Potential scaling steps, from simplest to more complex:
+A sensible scaling sequence is:
 
-1. Add appropriate indexes and optimise slow queries.
-2. Scale the managed database instance vertically when resource monitoring justifies it.
-3. Add read replicas for read-heavy reports.
-4. Partition large historical tables when query patterns and data volume warrant it.
-5. Consider sharding only when the earlier approaches cannot satisfy requirements.
+1. optimise indexes and review slow queries
+2. increase database capacity when needed
+3. add read replicas for reporting loads
+4. introduce partitioning for historical or large tables
+5. consider sharding only when the earlier options are no longer sufficient
 
-## Example PostgreSQL table
+## Example table in a distributed environment
 
-The relational schema can remain the authoritative transactional model in the cloud. This example follows the registration structure used in the earlier portfolios:
+The relational model remains the core transactional structure. The registration table continues to play a central role in the student system.
 
 ```sql
 CREATE TABLE registration (
@@ -99,78 +96,83 @@ CREATE TABLE registration (
 );
 ```
 
-The table is illustrative; it should be created together with the related student and course tables and foreign keys from the relational schema in Portfolio 1.
+This table can be retained in a cloud-managed relational database while the deployment architecture is adapted for scale and resilience.
 
 ## Cloud-managed database considerations
 
-### Benefits
+### Advantages
 
-- managed backups and point-in-time recovery options
-- high-availability and failover features, depending on service configuration
-- capacity can be adjusted as measured workloads grow
-- monitoring tools can report on database health and performance
-- less infrastructure maintenance than operating database servers directly
+- managed backups and point-in-time recovery
+- automatic failover support in many cloud providers
+- easier scaling to meet student demand
+- reduced systems administration effort for the university
+- better disaster recovery capabilities than a manually managed database server
 
-### Costs and limitations
+### Limitations
 
-- ongoing charges depend on instance size, storage, backups, and data transfer
-- application performance depends on network connectivity and database location
-- replicas can return slightly stale data
-- provider-specific features may complicate migration to another platform
-- security and access policies still require careful configuration by the university
+- cloud costs can increase as the system grows
+- provider-specific features may affect portability
+- network latency may influence application performance
+- replica lag must be managed carefully for academic reporting
+- security and access control still require careful configuration
 
-## Reliability, recovery, and security
+## Reliability and security
 
-A deployment plan should define and test:
+The university system should include:
 
-- backup frequency and retention
-- recovery point objective (RPO): how much recent data the university can tolerate losing
-- recovery time objective (RTO): how long the portal can be unavailable
-- failover behaviour and how applications reconnect
-- restore procedures, including periodic recovery tests
-- encryption in transit and at rest
-- least-privilege accounts for applications, staff, and administrators
-- audit logging for sensitive access and grade changes
+- regular automated backups
+- periodic restore testing
+- database monitoring and alerting
+- secure connection encryption
+- role-based access control for students, lecturers, administrative staff, and developers
+- audit logs for changes to final grades and core academic records
 
-Backups are not a substitute for testing restoration. The university should regularly verify that a backup can be restored and that the recovered database passes integrity checks.
+These controls are essential because the university portal stores information that affects academic progression and institutional records.
 
-## Cloud-managed versus self-hosted database
+## Cloud-managed vs self-hosted deployment
 
 | Area | Cloud-managed database | Self-hosted database |
 | --- | --- | --- |
-| Infrastructure maintenance | Provider manages much of the infrastructure | University manages servers, storage, and maintenance |
-| Scaling | Often available through service configuration | Requires planning and provisioning by the university |
-| Backups and failover | Commonly supported, but must be configured and tested | Must be designed and operated by the university |
-| Control | Some settings and infrastructure choices are provider-managed | Greater control over the environment |
-| Cost | Usage-based recurring charges | Hardware, staffing, power, and maintenance costs |
-| Portability | May use provider-specific features | Can be portable, depending on configuration |
+| Maintenance | Provider manages infrastructure and updates | University manages servers, patches, and maintenance |
+| Scaling | Usually easier through service configuration | Requires university planning and provisioning |
+| Backups and failover | Often built into the service | Must be designed and operated manually |
+| Cost | Usage-based recurring cost | Hardware, staffing, and operations cost |
+| Control | Some environment choices are provider-managed | Greater control over infrastructure |
+| Portability | May use provider-specific features | More portable if configured carefully |
 
-## Recommendation
+## Recommended design for this portfolio
 
-For the current XYZ University case study, begin with a managed PostgreSQL database configured for automated backups and high availability. Keep registration and grade transactions on the primary database. Add read replicas only when measured reporting workloads justify them, and route only delay-tolerant reports to those replicas. Consider partitioning or sharding later based on actual data growth and performance measurements rather than assuming they are necessary from the start.
+For the XYZ University Student Results Portal, the recommended starting point is a managed PostgreSQL database deployed in a cloud environment. The primary instance should handle all change operations, while read replicas can support reporting dashboards. A standby instance should be configured for failover, and scheduled backups should be tested regularly to confirm recovery readiness.
+
+This design supports the case study without introducing unnecessary complexity too early.
+
+## Suggested files for submission
+
+- `cloud_architecture.md` — diagram or architecture summary
+- `distributed_design_notes.md` — notes on replication and partitioning
+- `cloud_db_summary.md` — explanation of the chosen cloud database strategy
 
 ## Evidence to include in the final portfolio
 
-- a cloud architecture diagram or the architecture description above
-- the chosen availability and backup configuration
-- the replication and consistency trade-offs
-- measured query or workload evidence if a database was deployed
-- the university's proposed RPO and RTO, with a brief justification
-- a comparison of managed cloud hosting and self-hosting
-- a conclusion written in your own words
+The final report should include:
+
+- a description of the distributed or cloud architecture
+- a discussion of replication and partitioning choices
+- a short explanation of fault tolerance and backup strategy
+- a comparison of cloud-managed and self-hosted deployment models
+- a conclusion describing whether the design is suitable for the student portal
 
 ## Portfolio 5 submission checklist
 
-- [ ] Cloud or distributed architecture described
-- [ ] Primary, standby, and read-replica roles explained
-- [ ] Replication lag and consistency trade-offs discussed
-- [ ] Backup, recovery, and security requirements included
-- [ ] Scaling choices justified by workload measurements
-- [ ] Final recommendation written in your own words
+- [ ] Distributed database scenario identified
+- [ ] Cloud architecture described clearly
+- [ ] Replication and partitioning discussed
+- [ ] Reliability and security explained
+- [ ] Final recommendation written in the student’s own words
 
 ## Conclusion
 
-A managed cloud relational database is a suitable starting point for the XYZ University Student Results Portal because it can support transactional integrity while reducing infrastructure-management work. High availability, backups, and replicas can improve resilience and reporting capacity when configured and tested appropriately. Grade and registration records should remain authoritative and carefully audited, while more complex distribution techniques should be introduced only when measured needs justify their cost and operational complexity.
+A distributed or cloud-based database design is highly relevant to the XYZ University Student Results Portal as the system grows. While the core academic data still benefits from a relational model, a managed cloud environment can improve resilience, scalability, and operational efficiency. The most suitable approach for this case study is a managed relational database with strong backup and failover support, with more advanced distribution methods introduced only when workload and performance evidence justify them.
 
 ---
 
